@@ -6,18 +6,16 @@ pd.options.display.float_format = '{:.3f}'.format
 class HashTable:
 
     def __init__(self, M):
-        self.__hash_table = [""] * M
-        self.size = M
+        self.__hash_table = [""] * int(M)
+        self.size = int(M)
 
     # Hash Function (just V mod M)
     def __hash(self, v):
 
         try:
-            v = int(v)
+            return int(v) % self.size
         except:
-            v = sum(map(ord, v))
-        
-        return v % self.size
+            return sum(map(ord, v)) % self.size
 
     # Insert a value into the table
     def insert(self, key, value):
@@ -29,7 +27,19 @@ class HashTable:
         else:
             self.__hash_table[hash].append([key, value])
 
-    # Modify an entrie if it exists or create if not exists
+    # append to list if exist
+    def append(self, key, value):
+        
+        hash: int = self.__hash(key)
+
+        if(self.__hash_table[hash] == [""]):
+            self.__hash_table[hash] = [[key, [value]]]
+        else:
+            l = self.__hash_table[hash] 
+            for i in range(len(l)):
+                if l[i][0] == key:
+                    l[i][1].append(value)
+                    
     def ichange(self, key, value):
         
         hash: int = self.__hash(key)
@@ -41,9 +51,7 @@ class HashTable:
             for i in range(len(l)):
                     if l[i][0] == key:
                         l[i][1] = value
-                        return 0
-            
-            self.insert(key, value)
+        
     
     # Modify a existing value on the hash table
     def change(self, key, value):
@@ -70,14 +78,13 @@ class HashTable:
         tries = 1
         
         if self.__hash_table[hash] == "":
-            return ["", -1*tries]
+            return ""
 
         for i in self.__hash_table[hash]:
             if i[0] == key:
-                return [i[1], tries]
-            tries += 1
+                return i[1]
 
-        return ["", -1*tries]
+        return ""
 
 
     # Return the statistics about usage ratio, bigger list size and mean list size
@@ -109,33 +116,44 @@ class HashTable:
 
         for i in range(self.size):
             print(f"{i} -> {self.__hash_table[i]}")
-#---------------------------------------------------
 
-# Estrutura 1: Armazenando Dados Sobre Jogadores
 
-def calcular_media_rating(arqMiniRating, sofifa_id):
-    dados = pd.read_csv(arqMiniRating)
 
-    avaliacoes_jogador = dados[dados['sofifa_id'] == sofifa_id] #encontrar o sofifa_id em ambos arquivos
+#----------------------------------------------
 
-    if avaliacoes_jogador.empty:
-        return 0 
-
-    return float(avaliacoes_jogador['rating'].mean()) #calculo da media de rating
-#-------------------------------------------
-
+# === Abrindo Arquivos ===
 arqPlayers = pd.read_csv('players.csv')
 arqTags = pd.read_csv('tags.csv')
-arqMiniRating = pd.read_csv('minirating.csv')
+arqRating = pd.read_csv('rating.csv')
 
-media_avaliacoes = []
-for jogador_id in arqPlayers['sofifa_id']:
-    media = calcular_media_rating('minirating.csv', jogador_id)
-    media_avaliacoes.append(media)
 
-arqPlayers['media_rating'] = media_avaliacoes
 
-resultado = pd.merge(arqPlayers, arqTags, on='sofifa_id', how='outer')
-resultado = pd.merge(resultado, arqMiniRating, on='sofifa_id', how='outer')  
+# === Criando Hashs ===
+players = HashTable(arqPlayers.size) # <-- Informações dos jogadores
+ratings = HashTable(arqRating.size)  # <-- Informações dos ratings
+player_ratings = HashTable(arqRating.size) # <-- Notas dos jogadores
+tags = HashTable(arqTags.size/100) # <-- Tags e cada jogador que tem essa tag
 
-print(resultado)
+
+
+# === Lendo arquivo de Ratings ===
+for i in arqRating.values.tolist():
+    
+    ratings.insert(i[0], i[1:]) # user_id and sofifa_id are in floating point
+    player_ratings.append(i[1], i[2])
+
+
+    
+# === Lendo arquivo de players ===
+for i in arqPlayers.values.tolist():
+    players.insert(i[0], i[1:])
+
+
+    
+# === Lendo arquivo de Tags ===
+arqTags = arqTags[arqTags['tag'].notnull()]
+for i in arqTags.values.tolist():
+    tags.append(i[2], i[1])
+
+
+print("Fez")

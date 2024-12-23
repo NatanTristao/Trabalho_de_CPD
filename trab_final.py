@@ -32,13 +32,16 @@ class HashTable:
         
         hash: int = self.__hash(key)
 
-        if(self.__hash_table[hash] == [""]):
+
+        if(self.__hash_table[hash] == ""):
             self.__hash_table[hash] = [[key, [value]]]
         else:
             l = self.__hash_table[hash] 
             for i in range(len(l)):
                 if l[i][0] == key:
                     l[i][1].append(value)
+
+                    
                     
     def ichange(self, key, value):
         
@@ -115,7 +118,8 @@ class HashTable:
     def show(self):
 
         for i in range(self.size):
-            print(f"{i} -> {self.__hash_table[i]}")
+            if self.__hash_table[i] != "":
+                print(f"{i} -> {self.__hash_table[i]}")
 
 
 
@@ -127,13 +131,12 @@ arqTags = pd.read_csv('tags.csv')
 arqRating = pd.read_csv('rating.csv')
 
 
-
 # === Criando Hashs ===
 players = HashTable(arqPlayers.size) # <-- Informações dos jogadores
 ratings = HashTable(arqRating.size)  # <-- Informações dos ratings
 player_ratings = HashTable(arqRating.size) # <-- Notas dos jogadores
-tags = HashTable(arqTags.size/100) # <-- Tags e cada jogador que tem essa tag
-
+tags = HashTable(arqTags.size/1000) # <-- Tags e cada jogador que tem essa tag
+positions = HashTable(arqTags.size/1000) # <-- Posições e os jogadores daquela posição
 
 
 # === Lendo arquivo de Ratings ===
@@ -147,13 +150,16 @@ for i in arqRating.values.tolist():
 # === Lendo arquivo de players ===
 for i in arqPlayers.values.tolist():
     players.insert(i[0], i[1:])
-
-
     
+    for p in i[3].replace(" ","").split(","):
+        positions.append(p, i[0])
+
+
+
 # === Lendo arquivo de Tags ===
 arqTags = arqTags[arqTags['tag'].notnull()]
 for i in arqTags.values.tolist():
     tags.append(i[2], i[1])
 
-
+    
 print("Fez")

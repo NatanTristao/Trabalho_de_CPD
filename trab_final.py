@@ -165,14 +165,6 @@ class Trie:
                 stack.append(child)
             
         return ids
-    
-# Busca jogadores avaliados por um usuário
-def get_ratings_by_user(user_id):
-    ratings = user_ratings.get(user_id)
-    if ratings:
-        return ratings
-    else:
-        return 0
 #----------------------------------------------
 
 # === Abrindo Arquivos ===
@@ -188,18 +180,11 @@ player_ratings = HashTable(arqRating.size) # <-- Notas dos jogadores
 tags = HashTable(arqTags.size/1000) # <-- Tags e cada jogador que tem essa tag
 positions = HashTable(arqTags.size/1000) # <-- Posições e os jogadores daquela posição
 
-user_ratings = HashTable(arqRating.size) # <-- Informações dos ratings dados pelos usuarios
-
 # === Lendo arquivo de Ratings ===
 for i in arqRating.values.tolist():
     
     ratings.insert(i[0], i[1:]) # user_id and sofifa_id are in floating point
     player_ratings.append(i[1], i[2])
-
-    user_id = int(i[0])
-    player_id = int(i[1]) 
-    rating = i[2] 
-    user_ratings.append(user_id, (player_id, rating))
     
 # === Lendo arquivo de players ===
 for i in arqPlayers.values.tolist():

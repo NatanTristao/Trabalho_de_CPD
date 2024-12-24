@@ -122,13 +122,63 @@ class HashTable:
                 print(f"{i} -> {self.__hash_table[i]}")
 
 
+class TrieNode:
+    def __init__(self):
+        self.children = {} # Cada nó possui um dicionario de filhos para armazenar caracteres
+        self.players_ids = [] # IDs dos jogadores associados ao final do nome
 
+class Trie:
+    def __init__(self):
+        self.root = TrieNode()
+    
+    def insert(self, name, player_id):
+        node = self.root
+
+        for char in name:
+            if char not in node.children:
+                node.children[char] = TrieNode()
+            node = node.children[char]
+
+        # Adiciona o ID do jogador ao nó final do nome
+        node.players_ids.append(player_id)
+
+    def search_prefix(self, prefix):
+        node = self.root
+
+        for char in prefix:
+            if char not in node.children:
+                return [] #Prefixo não encontrado
+            node = node.children[char]
+
+        return self.__collect_player_ids(node)
+    
+    def __collect_player_ids(self, node):
+        # Coleta todos os IDs de jogadores a partir do nó atual
+        ids = []
+        stack = [node]
+
+        while stack:
+            current = stack.pop()
+            ids.extend(current.player_ids)
+
+            for child in current.children.values():
+                stack.append(child)
+            
+        return ids
+    
+# Busca jogadores avaliados por um usuário
+def get_ratings_by_user(user_id):
+    ratings = user_ratings.get(user_id)
+    if ratings:
+        return ratings
+    else:
+        return 0
 #----------------------------------------------
 
 # === Abrindo Arquivos ===
 arqPlayers = pd.read_csv('players.csv')
 arqTags = pd.read_csv('tags.csv')
-arqRating = pd.read_csv('rating.csv')
+arqRating = pd.read_csv('minirating.csv')
 
 
 # === Criando Hashs ===
@@ -138,6 +188,7 @@ player_ratings = HashTable(arqRating.size) # <-- Notas dos jogadores
 tags = HashTable(arqTags.size/1000) # <-- Tags e cada jogador que tem essa tag
 positions = HashTable(arqTags.size/1000) # <-- Posições e os jogadores daquela posição
 
+user_ratings = HashTable(arqRating.size) # <-- Informações dos ratings dados pelos usuarios
 
 # === Lendo arquivo de Ratings ===
 for i in arqRating.values.tolist():
@@ -145,7 +196,10 @@ for i in arqRating.values.tolist():
     ratings.insert(i[0], i[1:]) # user_id and sofifa_id are in floating point
     player_ratings.append(i[1], i[2])
 
-
+    user_id = int(i[0])
+    player_id = int(i[1]) 
+    rating = i[2] 
+    user_ratings.append(user_id, (player_id, rating))
     
 # === Lendo arquivo de players ===
 for i in arqPlayers.values.tolist():
@@ -154,8 +208,6 @@ for i in arqPlayers.values.tolist():
     for p in i[3].replace(" ","").split(","):
         positions.append(p, i[0])
 
-
-
 # === Lendo arquivo de Tags ===
 arqTags = arqTags[arqTags['tag'].notnull()]
 for i in arqTags.values.tolist():
@@ -163,3 +215,18 @@ for i in arqTags.values.tolist():
 
     
 print("Fez")
+
+player_names_trie = Trie()
+
+# === Insere long_names e IDs dos jogadores na Trie ===
+for i in arqPlayers.values.tolist():
+    player_id = i[0]
+    full_name = i[1]
+    player_names_trie.insert(full_name.lower(), player_id)
+
+# === Busca IDs por prefixo ===
+def search_players_by_prefix(prefix):
+    prefix = prefix.lower()
+    return player_names_trie.search_prefix(prefix)
+
+print("Fez_x2")

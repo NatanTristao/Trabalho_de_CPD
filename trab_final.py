@@ -228,7 +228,7 @@ def sort(arr, ind, e, d, t):
 # === Abrindo Arquivos ===
 arqPlayers = pd.read_csv('players.csv')
 arqTags = pd.read_csv('tags.csv')
-arqRating = pd.read_csv('rating.csv')
+arqRating = pd.read_csv('minirating.csv')
 
 
 # == Estrutura 1: Informações sobre os jogadores ==
@@ -254,8 +254,8 @@ positions = HashTable(arqTags.size/1000)
 
 # === Lendo arquivo de Ratings ===
 for i in arqRating.values.tolist():
-    
-    ratings.insert(i[0], i[1:]) # user_id and sofifa_id are in floating point
+
+    ratings.append(i[0], i[1:]) # user_id and sofifa_id are in floating point
     player_ratings.append(i[1], i[2])
 
     
@@ -320,6 +320,51 @@ def show_players_by_prefix(prefix):
         print(i[0], "{:.6f}".format(i[1]), *i[2:], sep=" ||||| ".expandtabs(5)) # Falta melhorar o print
 
 
-show_players_by_prefix("Pedro")
+        
+def search_reting_by_user(user):
+
+    global players
+    global player_ratings
+    
+    r = ratings.get(user)
+
+    l = []
+    for i in r:
+        
+        p = i[0]
+        n = [i[1]]
+
+        player = players.get(p)
+        rati = player_ratings.get(p)
+
+        if rati == "":
+            rati = [0]
+        rati = [sum(rati)/len(rati)]
+
+        sid = [int(p)]
+        
+        rati.extend(player)
+
+        n.extend(rati)
+        
+        sid.extend(n)
+
+        l.append(sid)
+
+    l = sort(l, 2, 0, len(r) - 1, "l")
+    l = sort(l, 1, 0, len(r) - 1, "b")
+    for i in l:
+        print(*i[:2], "{:.6f}".format(i[2]), *i[3:], sep=" ||||| ".expandtabs(5)) # Falta melhorar o print
+
+
+        
+
+
+
+# Testes    
+# show_players_by_prefix("Pedro")
+# search_reting_by_user(107786)
+search_reting_by_user(54766)
+    
 
 

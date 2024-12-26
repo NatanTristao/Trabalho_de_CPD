@@ -284,19 +284,15 @@ for i in arqPlayers.values.tolist():
     player_names_trie.insert(full_name.lower(), player_id)
 
 print("Fez_x2")
-    
-# === Busca IDs por prefixo ===
-def search_players_by_prefix(prefix):
-    prefix = prefix.lower()
-    return player_names_trie.search_prefix(prefix)
 
-def show_players_by_prefix(prefix):
-    
+
+def get_players(l: list[int]):
+
     global players
     global player_ratings
     
-    l = search_players_by_prefix(prefix)
     r = []
+
     for i in l:
         
         player = players.get(i)
@@ -312,59 +308,73 @@ def show_players_by_prefix(prefix):
         sid.extend(rati)
         
         r.append(sid)
-
+    return r
         
-    r = sort(r, 1, 0, len(r) - 1, "b")
-    for i in r:
-        
-        print(i[0], "{:.6f}".format(i[1]), *i[2:], sep=" ||||| ".expandtabs(5)) # Falta melhorar o print
-
-
-        
-def search_reting_by_user(user):
+# === Busca IDs por prefixo ===
+def search_players_by_prefix(prefix):
 
     global players
     global player_ratings
     
-    r = ratings.get(user)
+    prefix = prefix.lower()
 
-    l = []
+    l = player_names_trie.search_prefix(prefix)
+    r = get_players(l)
+           
+    r = sort(r, 1, 0, len(r) - 1, "b")
     for i in r:
-        
-        p = i[0]
-        n = [i[1]]
+        print(i[0], "{:.6f}".format(i[1]), *i[2:], sep=" ||||| ".expandtabs(5)) # Falta melhorar o print
 
-        player = players.get(p)
-        rati = player_ratings.get(p)
+  
+def search_rating_by_user(user):
 
-        if rati == "":
-            rati = [0]
-        rati = [sum(rati)/len(rati)]
+    global players
+    global player_ratings
+    
+    r = ratings.get(user)    
+    idr = [i[0] for i in r]
+    l = get_players(idr)
 
-        sid = [int(p)]
-        
-        rati.extend(player)
-
-        n.extend(rati)
-        
-        sid.extend(n)
-
-        l.append(sid)
+    for i in range(len(r)):
+        n = r[i][1]
+        l[i].insert(1, n)
 
     l = sort(l, 2, 0, len(r) - 1, "l")
     l = sort(l, 1, 0, len(r) - 1, "b")
     for i in l:
         print(*i[:2], "{:.6f}".format(i[2]), *i[3:], sep=" ||||| ".expandtabs(5)) # Falta melhorar o print
 
+def search_players_by_position(pos, top = 20):
 
-        
+    global positions
+
+    l = positions.get(pos)
+
+    r = get_players(l)
+
+    r = sort(r, 1, 0, len(r) - 1, "b")
+    r = r[:top]
+    for i in r:  
+        print(i[0], "{:.6f}".format(i[1]), *i[2:], sep=" ||||| ".expandtabs(5)) # Falta melhorar o print
 
 
+def search_player_by_tags(lista: list[str]):
 
-# Testes    
-# show_players_by_prefix("Pedro")
-# search_reting_by_user(107786)
-search_reting_by_user(54766)
+    global tags
     
+    s = set(tags.get(lista[0]))
+    for i in lista:
+        s = s.intersection(set(tags.get(i)))
 
+    r = get_players(s)
+    r = sort(r, 1, 0, len(r) - 1, "b")
+    for i in r:  
+        print(i[0], "{:.6f}".format(i[1]), *i[2:], sep=" ||||| ".expandtabs(5)) # Falta melhorar o print
+    
+# == Testes ==
+# search_players_by_prefix("Pedro")
+# search_rating_by_user(107786)
+# search_rating_by_user(54766)
+# search_players_by_position("RWB", 20)
+# search_player_by_tags(['Brazil', 'Team Player'])
 

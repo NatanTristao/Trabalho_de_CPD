@@ -159,49 +159,123 @@ class Trie:
 
         while stack:
             current = stack.pop()
-            ids.extend(current.player_ids)
+            ids.extend(current.players_ids)
 
             for child in current.children.values():
                 stack.append(child)
             
         return ids
+
+def merge(arr, ind, e, m, d):
+    n1 = m - e + 1
+    n2 = d - m
+ 
+    L = [0] * (n1)
+    R = [0] * (n2)
+
+    for i in range(0, n1):
+        L[i] = arr[e + i]
+ 
+    for j in range(0, n2):
+        R[j] = arr[m + 1 + j]
+ 
+  
+    i, j, k = 0, 0, e   
+
+    
+    while i < n1 and j < n2:
+        if L[i][ind] <= R[j][ind]:
+            arr[k] = L[i]
+            i += 1
+        else:
+            arr[k] = R[j]
+            j += 1
+        k += 1
+ 
+    while i < n1:
+        arr[k] = L[i]
+        i += 1
+        k += 1
+
+    while j < n2:
+        arr[k] = R[j]
+        j += 1
+        k += 1
+
+        
+# Merge sort for lists of lists
+def mergesort(arr, ind, e, d):
+    if e < d:
+        m = (e + d)//2
+        
+        mergesort(arr, ind, e, m)
+        mergesort(arr, ind, m+1, d)
+        
+        merge(arr, ind, e, m, d)
+    
+def sort(arr, ind, e, d, t):
+    
+    mergesort(arr, ind, e, d)
+    
+    if t == "b":
+        arr = arr[::-1]
+        return arr
+
+    return arr
+    
 #----------------------------------------------
 
 # === Abrindo Arquivos ===
 arqPlayers = pd.read_csv('players.csv')
 arqTags = pd.read_csv('tags.csv')
-arqRating = pd.read_csv('minirating.csv')
+arqRating = pd.read_csv('rating.csv')
 
 
-# === Criando Hashs ===
-players = HashTable(arqPlayers.size) # <-- Informações dos jogadores
-ratings = HashTable(arqRating.size)  # <-- Informações dos ratings
-player_ratings = HashTable(arqRating.size) # <-- Notas dos jogadores
-tags = HashTable(arqTags.size/1000) # <-- Tags e cada jogador que tem essa tag
-positions = HashTable(arqTags.size/1000) # <-- Posições e os jogadores daquela posição
+# == Estrutura 1: Informações sobre os jogadores ==
+players = HashTable(arqPlayers.size)
+
+
+# == Estrutura 2: Trie para guardar os Short Names dos jogadores ==
+player_names_trie = Trie()
+
+
+# == Estrutura 3: Informações sobre Ratings dos jogadores == 
+ratings = HashTable(arqRating.size)  # Informações dos ratings pelos users
+player_ratings = HashTable(arqRating.size) # Notas dos jogadores separadas
+
+
+# == Estrutura 4: Tags e os jogadores que tem a tag == 
+tags = HashTable(arqTags.size/1000)
+
+
+# == Estrutura Extra: Posições e os jogadores daquela posição para pesquisa 3 ==
+positions = HashTable(arqTags.size/1000)
+
 
 # === Lendo arquivo de Ratings ===
 for i in arqRating.values.tolist():
     
     ratings.insert(i[0], i[1:]) # user_id and sofifa_id are in floating point
     player_ratings.append(i[1], i[2])
+
     
 # === Lendo arquivo de players ===
 for i in arqPlayers.values.tolist():
-    players.insert(i[0], i[1:])
     
+    players.insert(i[0], i[1:])
     for p in i[3].replace(" ","").split(","):
         positions.append(p, i[0])
 
+        
 # === Lendo arquivo de Tags ===
 arqTags = arqTags[arqTags['tag'].notnull()]
 for i in arqTags.values.tolist():
+    
     tags.append(i[2], i[1])
 
     
 print("Fez")
 
-player_names_trie = Trie()
 
 # === Insere long_names e IDs dos jogadores na Trie ===
 for i in arqPlayers.values.tolist():
@@ -209,9 +283,43 @@ for i in arqPlayers.values.tolist():
     full_name = i[1]
     player_names_trie.insert(full_name.lower(), player_id)
 
+print("Fez_x2")
+    
 # === Busca IDs por prefixo ===
 def search_players_by_prefix(prefix):
     prefix = prefix.lower()
     return player_names_trie.search_prefix(prefix)
 
-print("Fez_x2")
+def show_players_by_prefix(prefix):
+    
+    global players
+    global player_ratings
+    
+    l = search_players_by_prefix(prefix)
+    r = []
+    for i in l:
+        
+        player = players.get(i)
+        rati = player_ratings.get(i)
+
+        if rati == "":
+            rati = [0]
+        rati = [sum(rati)/len(rati)]
+
+        rati.extend(player)
+        sid = [i]
+
+        sid.extend(rati)
+        
+        r.append(sid)
+
+        
+    r = sort(r, 1, 0, len(r) - 1, "b")
+    for i in r:
+        
+        print(i[0], "{:.6f}".format(i[1]), *i[2:], sep=" ||||| ".expandtabs(5)) # Falta melhorar o print
+
+
+show_players_by_prefix("Pedro")
+
+

@@ -1,6 +1,7 @@
 import pandas as pd
+import time
 
-# Configura o Pandas para exibir floats com 2 casas decimais
+# Configura o Pandas para exibir floats com 3 casas decimais
 pd.options.display.float_format = '{:.3f}'.format
 
 class HashTable:
@@ -223,6 +224,8 @@ def sort(arr, ind, e, d, t):
 
     return arr
     
+
+
 #----------------------------------------------
 
 # === Abrindo Arquivos ===
@@ -273,17 +276,11 @@ for i in arqTags.values.tolist():
     
     tags.append(i[2], i[1])
 
-    
-print("Fez")
-
-
 # === Insere long_names e IDs dos jogadores na Trie ===
 for i in arqPlayers.values.tolist():
     player_id = i[0]
     full_name = i[1]
     player_names_trie.insert(full_name.lower(), player_id)
-
-print("Fez_x2")
 
 
 def get_players(l: list[int]):
@@ -315,17 +312,23 @@ def search_players_by_prefix(prefix):
 
     global players
     global player_ratings
-    
+
     prefix = prefix.lower()
 
     l = player_names_trie.search_prefix(prefix)
     r = get_players(l)
-           
+    
     r = sort(r, 1, 0, len(r) - 1, "b")
-    for i in r:
-        print(i[0], "{:.6f}".format(i[1]), *i[2:], sep=" ||||| ".expandtabs(5)) # Falta melhorar o print
 
-  
+    if not r:
+        print("Erro", "Por favor, insira um prefixo que exista.")
+        time.sleep(2)
+        return
+
+    print(f"{'ID':<8} {'Short_name':<20} {'Long_name':<40} {'Player_position':<20} {'Nacionalidade':<20} Rating")
+    for i in r:
+        print(f"{i[0]:<8} {i[2]:<20} {i[3]:<40} {i[4]:<20}  {i[5]:<19} {i[1]:.6f}")
+
 def search_rating_by_user(user):
 
     global players
@@ -341,12 +344,22 @@ def search_rating_by_user(user):
 
     l = sort(l, 2, 0, len(r) - 1, "l")
     l = sort(l, 1, 0, len(r) - 1, "b")
-    for i in l:
-        print(*i[:2], "{:.6f}".format(i[2]), *i[3:], sep=" ||||| ".expandtabs(5)) # Falta melhorar o print
 
-def search_players_by_position(pos, top = 20):
+    if not l:
+        print("Erro, por favor, insira um número de usuário correto.")
+        time.sleep(2)
+        return
+
+    print(f"{'ID':<15} {'Rating':<11} {'Global_rating':<15}{'Short_name':<20} {'Long_name':<20} {'Player_position':<17} Nacionalidade")
+     
+    for i in l:
+        print(*i[:2], "{:.6f}".format(i[2]), *i[3:], sep="         ")
+    
+
+def search_players_by_position(pos, top):
 
     global positions
+    pos = pos.upper()
 
     l = positions.get(pos)
 
@@ -354,8 +367,16 @@ def search_players_by_position(pos, top = 20):
 
     r = sort(r, 1, 0, len(r) - 1, "b")
     r = r[:top]
-    for i in r:  
-        print(i[0], "{:.6f}".format(i[1]), *i[2:], sep=" ||||| ".expandtabs(5)) # Falta melhorar o print
+    
+    if not l:
+        print("Erro", "Por favor, insira uma posição válida.")
+        time.sleep(2)
+        return
+
+    print(f"{'ID':<8} {'Short_name':<20} {'Long_name':<40} {'Player_position':<20} {'Nacionalidade':<25} Rating")
+    
+    for i in r:
+        print(f"{i[0]:<8} {i[2]:<20} {i[3]:<40} {i[4]:<20}  {i[5]:<24} {i[1]:.6f}")
 
 
 def search_player_by_tags(lista: list[str]):
@@ -368,13 +389,50 @@ def search_player_by_tags(lista: list[str]):
 
     r = get_players(s)
     r = sort(r, 1, 0, len(r) - 1, "b")
-    for i in r:  
-        print(i[0], "{:.6f}".format(i[1]), *i[2:], sep=" ||||| ".expandtabs(5)) # Falta melhorar o print
-    
-# == Testes ==
-# search_players_by_prefix("Pedro")
-# search_rating_by_user(107786)
-# search_rating_by_user(54766)
-# search_players_by_position("RWB", 20)
-# search_player_by_tags(['Brazil', 'Team Player'])
 
+    if not r:
+        print("Erro", "Por favor, insira uma pesquisa válida.")
+        time.sleep(2)
+        return
+
+    print(f"{'ID':<8} {'Short_name':<17} {'Long_name':<40} {'Player_position':<20} {'Nacionalidade':<20} Rating")
+    
+    for i in r:
+        print(f"{i[0]:<8} {i[2]:<17} {i[3]:<40} {i[4]:<20}  {i[5]:<19} {i[1]:.6f}")
+
+def buscar_no_terminal():
+   
+    while True:
+        print("\nEscolha uma pesquisa:")
+        print("1. Buscar por prefixo")
+        print("2. Buscar por usuario")
+        print("3. Buscar por posição")
+        print("4. Buscar por tags")
+        print("5. Sair")
+
+        escolha = input("Digite o número da opção desejada: ")
+
+        if escolha == "1":
+            prefixo = input("Digite o prefixo do nome: ")
+            search_players_by_prefix(prefixo)
+        elif escolha == "2":
+            usuario = input("Digite o numero do usuario: ")
+            search_rating_by_user(int(usuario))
+        elif escolha == "3":
+            posicao = input("Digite uma posicao: ")
+            n_jogadores = input("Digite numero maximo de jogadores a ser retornado: ")
+            search_players_by_position(posicao, int(n_jogadores))
+        elif escolha == "4":
+            tag1 = input("Digite a primeira tag: ")
+            tag2 = input("Digite a segunda tag: ")
+            search_player_by_tags([tag1,tag2])
+
+        elif escolha == "5":
+            print("Saindo...")
+            time.sleep(2)
+            break
+        else:
+            print("Opção inválida. Tente novamente.")
+            time.sleep(2)
+
+buscar_no_terminal()

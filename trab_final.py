@@ -231,7 +231,7 @@ def sort(arr, ind, e, d, t):
 # === Abrindo Arquivos ===
 arqPlayers = pd.read_csv('players.csv')
 arqTags = pd.read_csv('tags.csv')
-arqRating = pd.read_csv('minirating.csv')
+arqRating = pd.read_csv('rating.csv')
 
 
 # == Estrutura 1: Informações sobre os jogadores ==
@@ -423,9 +423,10 @@ def buscar_no_terminal():
             n_jogadores = input("Digite numero maximo de jogadores a ser retornado: ")
             search_players_by_position(posicao, int(n_jogadores))
         elif escolha == "4":
-            tag1 = input("Digite a primeira tag: ")
-            tag2 = input("Digite a segunda tag: ")
-            search_player_by_tags([tag1,tag2])
+            tagsp = input("Digite as tags que deseja procurar, separadas por vírgula: ").split(",")
+#            tag1 = input("Digite a primeira tag: ")
+#            tag2 = input("Digite a segunda tag: ")
+            search_player_by_tags(tagsp)
 
         elif escolha == "5":
             print("Saindo...")

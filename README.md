@@ -1,26 +1,52 @@
 # Trabalho_de_CPD
-Neste trabalho vamos explorar o dataset FIFA21 - Players. Estes dados foram disponibilizados no Kaggle e a partir deles foram gerados os conjuntos de dados disponíveis para este trabalho. Os dados dos jogadores from extraídos do site https://sofifa.com e contém dados extraídos do modo carreira do FIFA 15 ao FIFA 21. 
 
-__ESTRUTURA 1: ARMAZENANDO DADOS SOBRE JOGADORES__<br>
-Uma tabela Hash foi construída para armazenar as informações associadas aos jogadores. A chave de acesso desta tabela Hash é o id do jogador, e os dados satélites correspondem aos dados adicionais presentes no arquivo players.csv descrito anteriormente somadas às informações de revisões de usuários sobre jogadores do arquivo. Estas informações adicionais foram calculadas. 
- 
-__ESTRUTURA 2: ESTRUTURA PARA BUSCAS POR STRINGS DE NOMES__<br>
-Uma das consultas solicitadas refere-se a uma busca por prefixos de nomes de jogadores. Para suportar esta consulta, foi construída uma árvore TRIE
- 
-__ESTRUTURA 3: ESTRUTURA PARA GUARDAR REVISÕES DE USUÁRIOS__<br>
-As avaliações descrevem as notas atribuídas para jogadores por cada usuário. Para poder responder perguntas sobre quais jogadores um usuário avaliou foi criado uma tabela hash que retorna, para um dado usuário, quais jogadores foram avaliadas por este usuário e qual as notas que este atribui.
+INF01124 — Classificação e Pesquisa de Dados
 
-__ESTRUTURA 4: ESTRUTURA PARA GUARDAR TAGS__<br>
-Os usuários também atribuem comentários em texto livre sobre jogadores no arquivo tags.csv. A estrutura usada foi a tabela Hash que suporta consultas por um string contendo uma tag, e retornar a lista de jogadores que foram atribuídos esta tag.
+## Overview
+In this project, we explore the FIFA21 - Players dataset (data from Kaggle, extracted from the website sofifa.com). The records cover players from Career Mode in FIFA 15 through FIFA 21. From this data, the datasets used in this work were generated.
 
-__PESQUISA 1: PREFIXOS DE NOMES DE JOGADORES__<br>
-Esta pesquisa tem por objetivo retornar a lista de jogadores cujo short name do jogador começa com um string passado como parâmetro. Todos os jogadores que satisfizerem o string de consulta devem ser retornados, um por linha, contendo o id do jogador, o nome curto, o nome longo, a lista de posições dos jogadores, avaliação média global e número de avaliações.
- 
-__PESQUISA 2: JOGADORES REVISADOS POR USUÁRIOS__<br>
-Esta pesquisa deve retornar a lista com no máximo 30 jogadores revisados pelo usuário e para cada jogador mostrar a nota dada pelo usuário, a média global e a contagem de avaliações. 
- 
-__PESQUISA 3: MELHORES JOGADORES DE UMA DETERMINADA POSIÇÃO__<br>
-Esta pesquisa tem por objetivo retornar a lista de jogadores com melhores notas de uma dada posição. Para evitar que um jogador seja retornado com uma boa média mas com poucas avaliações, esta consulta somente deve retornar os melhores jogadores com no mínimo 1000 avaliações. Para gerenciar o número de jogadores a serem retornados, a consulta deve receber como parâmetro um número N que corresponde ao número máximo de jogadores a serem retornados. 
 
-__PESQUISA 4: PREFIXOS DE NOMES DE JOGADORES__<br>
-Esta pesquisa tem por objetivo explorar a lista de tags adicionadas por cada usuário em cada revisão. Para uma lista de tags dada como entrada, a pesquisa deve retornar a lista de jogadores que estão associados a interseção de um conjunto de tags. O resultado da consulta deve ser ordenado em ordem decrescente da nota global do jogador, e a nota global de avaliação deve usar 6 casas decimais. Além disso, o resultado da consulta deve ser impresso compacto e organizado em colunas tabuladas.
+## Data structures implemented
+
+### Structure 1 — Player storage (Hash table)
+A hash table stores player information.  
+- **Key:** player id  
+- **Value:** fields from `players.csv` plus aggregated review info (computed from user review files).
+
+### Structure 2 — Name searches (TRIE)
+A TRIE was built to support prefix searches on players' short names.
+
+### Structure 3 — User reviews (Hash table)
+A hash table maps `user id` → list of reviews (player id + rating).  
+Use case: list which players a user reviewed and the ratings they gave.
+
+### Structure 4 — Tags (Hash table)
+Tags from `tags.csv` are stored in a hash table that maps a tag string → list of players that received that tag.  
+This supports searching by tag and combining tags (intersections).
+
+---
+
+## Queries / Searches
+
+### Search 1 — Player name prefix
+Return players whose *short name* starts with a given string.  
+Each result line includes: `player id`, `short name`, `long name`, `positions`, `global average rating`, and `number of ratings`.
+
+### Search 2 — Players reviewed by a user
+Return up to 30 players reviewed by a given user. For each player show: `user's rating`, `global average`, and `rating count`.
+
+### Search 3 — Top players by position
+Return top players for a specific position. Rules:
+- Only consider players with **at least 1000 ratings** (to avoid bias from few reviews).
+- Accepts a parameter `N` to limit the number of returned players.
+
+### Search 4 — Players matching tags intersection
+Given a list of tags, return players that belong to the **intersection** of those tags.  
+Output requirements:
+- Sorted by **global average rating (descending)**  
+- Global rating printed with **6 decimal places**  
+- Compact output formatted in tabulated columns
+
+## Members
+- Rayan Raddatz de Matos ([@rddtz](https://github.com/rddtz))
+- Natan Feijó Tristão ([@NatanTristao](https://github.com/NatanTristao))
